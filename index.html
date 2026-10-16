@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Data Cleaner — โปรแกรมคลีนข้อมูล Excel และ CSV สำหรับงานบัญชีไทย (ออฟไลน์ 100%)</title>
+  <meta name="description" content="เปลี่ยนไฟล์ Excel และ CSV ที่เละให้สะอาดพร้อมใช้งานในไม่กี่คลิก แปลงวันที่ พ.ศ./ค.ศ. ยอดเงินติดลบ (1,250.50) เลขผู้เสียภาษี 13 หลัก รหัสสาขา 00000 ทำงานออฟไลน์ 100% ข้อมูลไม่รั่วไหล" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0f3d68;
+      --primary-light: #0284c7;
+      --cta-green: #15803d;
+      --cta-green-hover: #166534;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --bg-light: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --card-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Leelawadee UI', sans-serif;
+      color: var(--text-main);
+      background-color: #ffffff;
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    h1, h2, h3, h4, .btn, .badge, .nav-brand {
+      font-family: 'Prompt', 'Leelawadee UI', sans-serif;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .nav-brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-brand span.tag {
+      font-size: 0.75rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a:not(.btn) {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:not(.btn):hover {
+      color: var(--primary);
+    }
+
+    /* Buttons — High contrast white text guaranteed */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-primary,
+    a.btn-primary {
+      background: var(--cta-green);
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(21, 128, 61, 0.3);
+    }
+
+    .btn-primary:hover,
+    a.btn-primary:hover {
+      background: var(--cta-green-hover);
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
+
+    .btn-blue,
+    a.btn-blue {
+      background: var(--primary-light);
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn-blue:hover,
+    a.btn-blue:hover {
+      background: var(--primary);
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline,
+    a.btn-outline {
+      background: #ffffff;
+      color: var(--primary) !important;
+      border: 2px solid var(--primary-light);
+    }
+
+    .btn-outline:hover,
+    a.btn-outline:hover {
+      background: #f0f9ff;
+    }
+
+    .btn-sm {
+      padding: 9px 18px;
+      font-size: 0.92rem;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+      padding: 72px 0 56px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.9rem, 4vw, 2.85rem);
+      color: var(--text-main);
+      line-height: 1.3;
+      max-width: 850px;
+      margin: 0 auto 18px;
+    }
+
+    .hero h1 span {
+      color: var(--primary-light);
+    }
+
+    .hero p.subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 740px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .hero-trust {
+      font-size: 0.94rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* App Mockup Guide Bar */
+    .guide-preview {
+      max-width: 880px;
+      margin: 40px auto 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .guide-window-bar {
+      background: #f1f5f9;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .guide-blue-strip {
+      background: #e7f0fa;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 3px solid #1f6fbf;
+    }
+
+    .guide-blue-strip strong {
+      color: #12324f;
+      font-size: 1.05rem;
+    }
+
+    .guide-blue-btn {
+      background: #1f6fbf;
+      color: #ffffff;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Section General */
+    section {
+      padding: 68px 0;
+    }
+
+    .section-bg {
+      background: var(--bg-light);
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 44px;
+    }
+
+    .section-header h2 {
+      font-size: 1.9rem;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* Before / After Table */
+    .comparison-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .table-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: var(--card-shadow);
+      overflow-x: auto;
+    }
+
+    .table-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill-bad {
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .pill-good {
+      background: var(--success-bg);
+      color: var(--success);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    table.demo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    table.demo-table th,
+    table.demo-table td {
+      border: 1px solid #cbd5e1;
+      padding: 9px 12px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    table.demo-table th {
+      background: #1f4e78;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .cell-dirty {
+      background: #fff1f2;
+      color: #9f1239;
+      font-weight: 600;
+    }
+
+    .cell-clean {
+      background: #f0fdf4;
+      color: #166534;
+      font-weight: 600;
+    }
+
+    /* 3 Steps */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .step-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #dbeafe;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .step-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .feature-box h3 {
+      font-size: 1.12rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    /* Pricing */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      max-width: 860px;
+      margin: 0 auto 48px;
+    }
+
+    .price-card {
+      background: #ffffff;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .price-card.featured {
+      border-color: var(--primary-light);
+      position: relative;
+    }
+
+    .featured-ribbon {
+      position: absolute;
+      top: -14px;
+      right: 24px;
+      background: var(--primary-light);
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 999px;
+    }
+
+    .price-amount {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 12px 0 4px;
+    }
+
+    .price-amount del {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      font-weight: 400;
+      margin-left: 8px;
+    }
+
+    .price-note {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .price-list {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+
+    .price-list li {
+      margin-bottom: 10px;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .price-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Automated Slip Checkout Box */
+    .checkout-card {
+      max-width: 860px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 2px solid #bae6fd;
+      border-radius: 18px;
+      padding: 32px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 28px;
+      align-items: start;
+      margin-top: 20px;
+    }
+
+    .qr-box {
+      background: #f0f9ff;
+      border: 1px dashed #38bdf8;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .qr-placeholder {
+      width: 200px;
+      min-height: 190px;
+      margin: 12px auto;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-weight: 600;
+      padding: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="file"],
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.98rem;
+      font-family: inherit;
+    }
+
+    .key-result-box {
+      display: none;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 12px;
+      background: #f0fdf4;
+      border: 2px solid #22c55e;
+    }
+
+    .key-code {
+      background: #ffffff;
+      border: 1px solid #86efac;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.92rem;
+      word-break: break-all;
+      margin: 10px 0 14px;
+      color: #0f172a;
+    }
+
+    .error-msg {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    /* FAQ */
+    .faq-list {
+      max-width: 780px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+
+    .faq-item h4 {
+      font-size: 1.08rem;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+
+    footer {
+      background: #0f172a;
+      color: #cbd5e1;
+      padding: 40px 0;
+      text-align: center;
+      font-size: 0.92rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="container">
+      <a href="#" class="nav-brand">
+        Excel Data Cleaner
+        <span class="tag">v1.0 สำหรับ Windows</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#before-after">ตัวอย่างก่อน-หลัง</a>
+        <a href="#features">ฟีเจอร์เด่น</a>
+        <a href="#pricing">ราคา & สั่งซื้ออัตโนมัติ</a>
+        <a href="#faq">คำถามที่พบบ่อย</a>
+        <a href="#contact">ติดต่อ / แจ้งปัญหา</a>
+        <a href="#download" class="btn btn-primary btn-sm">⬇ ดาวน์โหลดทดลองใช้ฟรี</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="download">
+    <div class="container">
+      <div class="badge">ออกแบบเพื่อคนทำงานบัญชี ธุรการ และแอดมินไทยโดยเฉพาะ</div>
+      <h1>เปลี่ยนไฟล์ Excel และ CSV ที่เละ<br /><span>ให้สะอาดพร้อมใช้ในไม่กี่คลิก</span></h1>
+      <p class="subtitle">
+        ไม่ต้องเขียนสูตร Excel ยาวๆ ไม่ต้องนั่งแก้ทีละแถว จัดการวันที่ พ.ศ. ปน ค.ศ., ยอดเงินติดลบ <code>(1,250.50)</code>,
+        ชื่อบริษัท <code>บจก./หจก.</code>, เลขผู้เสียภาษี 13 หลัก และรหัสสาขา <code>00000</code> ได้ในคลิกเดียว
+      </p>
+      <div class="hero-actions">
+        <!-- เปลี่ยนลิงก์ href ด้านล่างเป็นลิงก์ไฟล์ .exe ใน GitHub Releases เมื่อแพ็กโปรแกรมเสร็จ -->
+        <a href="#pricing" class="btn btn-primary">⬇ ดาวน์โหลดไปทดลองใช้ฟรี (Windows)</a>
+        <a href="#before-after" class="btn btn-outline">ดูตัวอย่างผลลัพธ์ก่อน-หลัง</a>
+      </div>
+      <div class="hero-trust">
+        <span>🔒 ทำงานออฟไลน์ 100% ข้อมูลความลับไม่รั่วไหล</span>
+        <span>🛡️ ไม่แก้ทับไฟล์ต้นฉบับ</span>
+        <span>✨ มีข้อมูลตัวอย่างให้ลองกดเล่นได้ทันที</span>
+      </div>
+
+      <div class="guide-preview">
+        <div class="guide-window-bar">
+          <span>Excel Data Cleaner — ใช้งานง่ายแม้ไม่เก่งคอมพิวเตอร์</span>
+          <span>ทำงานบนเครื่องของคุณ 100%</span>
+        </div>
+        <div class="guide-blue-strip">
+          <div>
+            <strong>แถบสีฟ้านำทางอัตโนมัติ:</strong> บอกขั้นตอนถัดไปทีละขั้น กดปุ่มขวาสุดตามไปเรื่อยๆ จนเสร็จ!
+          </div>
+          <span class="guide-blue-btn">ชุดกฎงานบัญชีไทย (แนะนำ) →</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Before / After Section -->
+  <section id="before-after" class="section-bg">
+    <div class="container">
+      <div class="section-header">
+        <h2>เปรียบเทียบชัดๆ: ก่อนคลีน vs หลังคลีน</h2>
+        <p>ปัญหาที่เจอบ่อยในไฟล์ที่ส่งมาจากหลายแผนกหรือดึงจากระบบ ERP โปรแกรมจัดการให้เป็นมาตรฐานเดียวกันทั้งหมด</p>
+      </div>
+
+      <div class="comparison-wrap">
+        <div class="table-card">
+          <h3><span class="pill-bad">ก่อนคลีน</span> ไฟล์ดิบที่ปนกันมั่ว ใช้ทำ Pivot / SUM หรือนำเข้าระบบบัญชีต่อไม่ได้</h3>
+          <table class="demo-table">
+            <thead>
+              <tr>
+                <th>ชื่อบริษัท</th>
+                <th>เลขผู้เสียภาษี</th>
+                <th>สาขา</th>
+                <th>วันที่วางบิล</th>
+                <th>ยอดรวม</th>
+                <th>เบอร์โทร</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-dirty">&nbsp;&nbsp;บจก.&nbsp;&nbsp;&nbsp;สยามการค้า&nbsp;&nbsp;</td>
+                <td>0105536012348</td>
+                <td class="cell-dirty">สำนักงานใหญ่</td>
+                <td class="cell-dirty">15/01/2568 14:30</td>
+                <td class="cell-dirty">(1,250.50)</td>
+                <td class="cell-dirty">081 234 5678</td>
+              </tr>
+              <tr>
+                <td class="cell-dirty">หจก.เจริญทรัพย์</td>
+                <td class="cell-dirty">103540011229 (เลข 0 หาย)</td>
+                <td class="cell-dirty">สนญ.</td>
+                <td class="cell-dirty">17 ม.ค. 68</td>
+                <td class="cell-dirty">฿ 1,800.-</td>
+                <td class="cell-dirty">+66 2 345 6789</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-card">
+          <h3><span class="pill-good">หลังคลีน</span> ข้อมูลสะอาดเป็นมาตรฐานเดียวกัน พร้อมรายงานตรวจสอบทุกจุด</h3>
+          <table class="demo-table">
+            <thead>
+              <tr>
+                <th>ชื่อบริษัท</th>
+                <th>เลขผู้เสียภาษี</th>
+                <th>สาขา</th>
+                <th>วันที่วางบิล</th>
+                <th>ยอดรวม</th>
+                <th>เบอร์โทร</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-clean">บริษัท สยามการค้า จำกัด</td>
+                <td class="cell-clean">0105536012348</td>
+                <td class="cell-clean">00000</td>
+                <td class="cell-clean">2025-01-15</td>
+                <td class="cell-clean">-1250.50</td>
+                <td class="cell-clean">0812345678</td>
+              </tr>
+              <tr>
+                <td class="cell-clean">ห้างหุ้นส่วนจำกัด เจริญทรัพย์</td>
+                <td class="cell-clean">แจ้งเตือนเลขไม่ครบ 13 หลัก</td>
+                <td class="cell-clean">00000</td>
+                <td class="cell-clean">2025-01-17</td>
+                <td class="cell-clean">1800.00</td>
+                <td class="cell-clean">023456789</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Easy Steps -->
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <h2>ไม่เก่งคอมพิวเตอร์ก็ใช้เป็นใน 3 ขั้นตอน</h2>
+        <p>ไม่ต้องจำคำศัพท์เทคนิค มีปุ่มภาษาไทยเข้าใจง่ายและดูตัวอย่างก่อนแก้ไขจริงทุกครั้ง</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>เลือกไฟล์ Excel หรือ CSV</h3>
+          <p>เปิดไฟล์ <code>.xlsx</code> หรือ <code>.csv</code> (แก้ปัญหาภาษาไทยต่างด้าวให้อัตโนมัติ) หรือกดปุ่ม <strong>“ลองเล่นด้วยข้อมูลตัวอย่าง”</strong> เพื่อทดลองได้ทันที</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>กดปุ่ม “ชุดกฎงานบัญชีไทย”</h3>
+          <p>โปรแกรมเลือกกฎที่เหมาะกับคอลัมน์บัญชีให้อัตโนมัติ พร้อมแสดงตารางเปรียบเทียบ <strong>ค่าก่อนแก้ vs ค่าหลังแก้</strong> ให้ตรวจทานก่อนอนุมัติ</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>ส่งออกไฟล์ใหม่พร้อมรายงาน</h3>
+          <p>ได้ไฟล์ Excel ใหม่ที่ล็อกหัวตาราง ปรับความกว้างคอลัมน์สวยงาม และแนบชีตรายงานสรุปจุดที่แก้ไขไว้ในไฟล์เดียวกันโดยไม่แตะไฟล์ต้นฉบับ</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section-bg">
+    <div class="container">
+      <div class="section-header">
+        <h2>ฟีเจอร์ครบจบสำหรับคนทำงานข้อมูลไทย</h2>
+        <p>รวมกฎทำความสะอาดข้อมูล 21 รูปแบบที่ออกแบบมาแก้ปัญหาหน้างานจริงโดยเฉพาะ</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-box">
+          <h3>🧾 มาตรฐานข้อมูลบัญชีและภาษีไทย</h3>
+          <p>ตรวจเลขบัตรประชาชน/เลขผู้เสียภาษี 13 หลักด้วยสูตร Checksum จริง แปลงรหัสสาขา <code>สนญ.</code> เป็น <code>00000</code> และจัดชื่อ <code>บจก./บมจ./หจก.</code></p>
+        </div>
+        <div class="feature-box">
+          <h3>📅 จัดการวันที่ พ.ศ. / ค.ศ. และเวลา</h3>
+          <p>แปลงวันที่ <code>15 ม.ค. 68</code>, <code>15/01/2568</code> หรือวันที่ติดเวลาจาก Statement ธนาคาร ให้เป็นรูปแบบเดียวกันทั้งหมด</p>
+        </div>
+        <div class="feature-box">
+          <h3>💰 แปลงตัวเลขและยอดเงินบัญชี</h3>
+          <p>แปลงยอดติดลบในวงเล็บ <code>(1,250.50)</code>, ยอดขีดเดี่ยว <code>-</code> เป็น <code>0</code>, ลบสกุลเงิน <code>฿</code> และปัดทศนิยม 2 ตำแหน่งตามหลักบัญชี</p>
+        </div>
+        <div class="feature-box">
+          <h3>📑 แก้ตาราง Merge เซลล์และแถวยอดรวม</h3>
+          <p>เติมค่าจากแถวบนลงช่องว่างอัตโนมัติ (Fill Down) โดยข้ามแถวหัวตารางซ้ำและแถว <code>รวมทั้งสิ้น</code> ท้ายตารางอย่างแม่นยำ</p>
+        </div>
+        <div class="feature-box">
+          <h3>🔁 บันทึกเทมเพลตไว้ใช้ซ้ำทุกเดือน</h3>
+          <p>ตั้งค่ากฎครั้งเดียวแล้วบันทึกเป็นเทมเพลต เดือนถัดไปแค่เลือกไฟล์ก็จะคลีนตามสูตรเดิมให้ทันที หรือสั่งรันหลายไฟล์พร้อมกันได้</p>
+        </div>
+        <div class="feature-box">
+          <h3>🔐 ปลอดภัย 100% ข้อมูลไม่ออกจากเครื่อง</h3>
+          <p>ไม่ต้องอัปโหลดไฟล์เงินเดือนหรือข้อมูลลูกค้าขึ้นเว็บไซต์ใดๆ โปรแกรมทำงานออฟไลน์บนเครื่องคอมพิวเตอร์ของคุณทั้งหมด</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing & Automated Slip Checkout Section -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2>ทดลองใช้ฟรีก่อนถูกใจค่อยซื้อ · จ่ายครั้งเดียวจบ ไม่มีรายเดือน</h2>
+        <p>แนะนำให้ดาวน์โหลดไปทดลองกับไฟล์งานจริงของคุณก่อน เมื่อมั่นใจแล้วสามารถสแกนจ่ายและแนบสลิปเพื่อรับรหัสปลดล็อกได้ทันทีตลอด 24 ชม.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Free Trial -->
+        <div class="price-card">
+          <div>
+            <h3>รุ่นทดลองใช้ (Evaluation)</h3>
+            <div class="price-amount">ฟรี 0 บาท</div>
+            <div class="price-note">ลองใช้กับไฟล์จริงได้ทันที ไม่จำกัดวันหมดอายุ</div>
+            <ul class="price-list">
+              <li>เปิดไฟล์ <code>.xlsx</code> และ <code>.csv</code> ได้ไม่จำกัดขนาด</li>
+              <li>ตรวจคุณภาพข้อมูลและดูจุดผิดพลาดได้ทั้งไฟล์</li>
+              <li>ลองใช้กฎคลีนข้อมูลได้ครบทั้ง 21 กฎ</li>
+              <li>ดูตารางเปรียบเทียบ ก่อนแก้ / หลังแก้ ได้ครบทุกแถว</li>
+              <li><strong>ส่งออกไฟล์ผลลัพธ์ได้สูงสุด 100 แถวต่อครั้ง</strong></li>
+            </ul>
+          </div>
+          <a href="#download" class="btn btn-outline">⬇ ดาวน์โหลดตัวทดลองใช้ฟรี</a>
+        </div>
+
+        <!-- Personal License -->
+        <div class="price-card featured">
+          <div class="featured-ribbon">คุ้มที่สุด · รับคีย์อัตโนมัติใน 5 วินาที</div>
+          <div>
+            <h3>รุ่นใช้งานจริง (Personal License)</h3>
+            <div class="price-amount">790 บาท <del>1,290 บาท</del></div>
+            <div class="price-note">ราคาโปรโมชันเปิดตัว · จ่ายครั้งเดียวใช้ได้ตลอด (สำหรับ 1 เครื่อง)</div>
+            <ul class="price-list">
+              <li><strong>ปลดล็อกส่งออกไฟล์ Excel และ CSV ไม่จำกัดจำนวนแถว</strong></li>
+              <li>ปลดล็อกการประมวลผลหลายไฟล์พร้อมกัน (Batch Processing)</li>
+              <li>บันทึกและโหลดเทมเพลตชุดกฎไว้ใช้งานซ้ำได้ไม่จำกัด</li>
+              <li>รับรหัส <code>License Key</code> บนหน้าเว็บทันที + ส่งสำเนาเข้าอีเมล</li>
+              <li>อัปเดตฟีเจอร์ใหม่ฟรีตลอดเวอร์ชัน 1.x</li>
+            </ul>
+          </div>
+          <a href="#auto-checkout" class="btn btn-primary">⚡ ชำระเงินและรับ License Key ทันที</a>
+        </div>
+      </div>
+
+      <!-- Automated Slip Verification Checkout Card -->
+      <div class="checkout-card" id="auto-checkout">
+        <h3 style="font-size: 1.35rem; color: var(--primary);">⚡ ระบบตรวจสอบสลิปและออก License Key อัตโนมัติ (24 ชั่วโมง)</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">
+          ไม่ต้องรอแอดมินตอบแชท: โอนเงินผ่าน QR พร้อมเพย์ แล้วแนบรูปสลิป ระบบจะตรวจสอบสลิปและแสดง License Key สำหรับปลดล็อกโปรแกรมให้ทราบทันทีพร้อมส่งเข้าอีเมลของคุณ
+        </p>
+
+        <div class="checkout-grid">
+          <!-- Step A: QR Code -->
+          <div class="qr-box">
+            <strong>1. สแกนชำระเงินผ่าน QR พร้อมเพย์</strong>
+            <div class="qr-placeholder">
+              <img src="/promptpay-qr.jpg" alt="QR พร้อมเพย์สำหรับชำระเงิน" style="width: 170px; height: auto; display: block;" />
+              <span style="font-size: 0.8rem; color: #64748b; margin-top: 6px;">ยอดชำระ 790.00 บาท</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-main);">
+              <strong>ยอดโอน:</strong> <span style="color: var(--cta-green); font-weight: 700;">790.00 บาท</span><br />
+              <span style="font-size: 0.85rem; color: var(--text-muted);">(กรุณาโอนยอดให้ตรงเพื่อความแม่นยำในการตรวจสลิปอัตโนมัติ)</span>
+            </p>
+          </div>
+
+          <!-- Step B: Form & Upload -->
+          <div>
+            <form id="slipForm" onsubmit="handleSlipSubmit(event)">
+              <div class="form-group">
+                <label for="customerName">2. ชื่อผู้ใช้งาน หรือ ชื่อบริษัท (สำหรับผูกกับ License Key ของคุณ)</label>
+                <input type="text" id="customerName" placeholder="เช่น คุณสมชาย ใจดี หรือ บจก. สยามการค้า" required />
+              </div>
+
+              <div class="form-group">
+                <label for="customerEmail">3. อีเมลของคุณ (สำหรับส่งสำเนา License Key เก็บไว้)</label>
+                <input type="email" id="customerEmail" placeholder="name@example.com" required />
+              </div>
+
+              <div class="form-group">
+                <label for="slipFile">4. แนบรูปสลิปโอนเงิน (.jpg หรือ .png ที่มี QR บนสลิปชัดเจน)</label>
+                <input type="file" id="slipFile" accept="image/*" required />
+              </div>
+
+              <button type="submit" id="submitSlipBtn" class="btn btn-primary" style="width: 100%; margin-top: 6px;">
+                🔍 ตรวจสอบสลิปและรับ License Key ทันที
+              </button>
+              <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 8px;">
+                💡 <strong>พิมพ์อีเมลผิด หรือทำคีย์หาย?</strong> คุณสามารถกรอกอีเมลที่ถูกต้องแล้วแนบสลิปใบเดิมซ้ำอีกครั้งเพื่อกู้คืน License Key เดิมของคุณได้ตลอดเวลาครับ
+              </p>
+            </form>
+
+            <div id="checkoutError" class="error-msg"></div>
+
+            <!-- Instant Key Result -->
+            <div id="keyResultBox" class="key-result-box">
+              <strong style="color: #166534; font-size: 1.05rem;">✅ ตรวจสอบสำเร็จ! นี่คือ License Key (รหัสปลดล็อกโปรแกรม) ของคุณ:</strong>
+              <div id="generatedKeyText" class="key-code"></div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" onclick="copyLicenseKey()" class="btn btn-blue btn-sm" id="copyKeyBtn">
+                  📋 คัดลอก License Key
+                </button>
+                <button type="button" onclick="downloadLicenseKeyFile()" class="btn btn-outline btn-sm">
+                  💾 ดาวน์โหลดเก็บเป็นไฟล์ (.txt)
+                </button>
+              </div>
+              <p id="emailStatusNote" style="font-size: 0.85rem; color: #15803d; margin-top: 10px;">
+                วิธีใช้: เปิดโปรแกรม Excel Data Cleaner → แท็บ “เกี่ยวกับ / ตั้งค่า” → กดปุ่ม “ใส่ License Key (ปลดล็อกโปรแกรม)” แล้ววางรหัสนี้ได้เลยครับ
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="section-bg">
+    <div class="container">
+      <div class="section-header">
+        <h2>คำถามที่พบบ่อย (FAQ)</h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <h4>1. ไม่เก่งคอมพิวเตอร์เลย จะใช้งานยากไหม?</h4>
+          <p>ไม่ยากเลยครับ โปรแกรมออกแบบมาให้มี <strong>แถบสีฟ้านำทางด้านบน</strong> คอยบอกทีละขั้นว่าต้องกดปุ่มไหนต่อ และมีปุ่ม <strong>“ลองเล่นด้วยข้อมูลตัวอย่าง”</strong> ให้ทดลองกดคลีนได้ในคลิกเดียวโดยไม่ต้องกลัวทำไฟล์พังครับ</p>
+        </div>
+        <div class="faq-item">
+          <h4>2. โปรแกรมจะเข้าไปแก้ทับไฟล์ Excel ต้นฉบับของฉันไหม?</h4>
+          <p><strong>ไม่แตะไฟล์ต้นฉบับเด็ดขาดครับ</strong> โปรแกรมจะอ่านข้อมูลมาแสดงผล และเมื่อคุณกดอนุมัติแล้วส่งออก โปรแกรมจะสร้างเป็นไฟล์ใหม่เสมอ ไฟล์เดิมของคุณจึงปลอดภัย 100%</p>
+        </div>
+        <div class="faq-item">
+          <h4>3. ถ้าตอนสั่งซื้อพิมพ์อีเมลผิด หรือทำ License Key หาย ต้องทำอย่างไร?</h4>
+          <p>ไม่ต้องกังวลครับ! นอกจากรหัสจะแสดงบนหน้าจอเว็บและบันทึกไว้ในเบราว์เซอร์ของคุณทันทีแล้ว หากคุณพิมพ์อีเมลผิด คุณสามารถ <strong>กรอกอีเมลใหม่ที่ถูกต้องแล้วอัปโหลดรูปสลิปใบเดิมซ้ำอีกครั้ง</strong> ระบบจะออก License Key เดิมของสลิปใบนั้นและส่งเข้าอีเมลใหม่ให้ทันทีครับ</p>
+        </div>
+        <div class="faq-item">
+          <h4>4. ใช้กับคอมพิวเตอร์ระบบไหนได้บ้าง?</h4>
+          <p>รองรับระบบปฏิบัติการ Windows 10 และ Windows 11 (64-bit) โดยไม่ต้องติดตั้งโปรแกรมเสริมใดๆ เพิ่มเติมครับ</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact / Support Section -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-header">
+        <h2>แจ้งปัญหาการใช้งาน / ติดต่อสอบถามผู้พัฒนา</h2>
+        <p>หากมีข้อสงสัยก่อนตัดสินใจซื้อ หรือพบปัญหาในการใช้งาน สามารถส่งข้อความถึงผู้พัฒนาได้โดยตรง ระบบจะติดต่อกลับทางอีเมลภายใน 24 ชั่วโมงครับ</p>
+      </div>
+
+      <div class="checkout-card" style="max-width: 680px;">
+        <form id="contactForm" onsubmit="handleContactSubmit(event)">
+          <div class="form-group">
+            <label for="contactName">ชื่อของคุณ</label>
+            <input type="text" id="contactName" placeholder="เช่น คุณสมหญิง" required />
+          </div>
+          <div class="form-group">
+            <label for="contactEmail">อีเมลสำหรับให้ผู้พัฒนาติดต่อกลับ</label>
+            <input type="email" id="contactEmail" placeholder="name@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="contactTopic">เรื่องที่ต้องการติดต่อ</label>
+            <select id="contactTopic">
+              <option value="สอบถามข้อมูลก่อนสั่งซื้อ">สอบถามข้อมูลก่อนสั่งซื้อ</option>
+              <option value="แจ้งปัญหาการชำระเงิน / License Key">แจ้งปัญหาการชำระเงิน / License Key</option>
+              <option value="สอบถามวิธีใช้งาน / แจ้งปัญหาการคลีนไฟล์">สอบถามวิธีใช้งาน / แจ้งปัญหาการคลีนไฟล์</option>
+              <option value="ข้อเสนอแนะอื่นๆ">ข้อเสนอแนะอื่นๆ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="contactMessage">รายละเอียด</label>
+            <textarea id="contactMessage" rows="4" placeholder="ระบุปัญหาที่พบ หรือคำถามที่ต้องการทราบ..." required></textarea>
+          </div>
+          <button type="submit" id="contactSubmitBtn" class="btn btn-blue" style="width: 100%;">
+            📩 ส่งข้อความถึงผู้พัฒนา
+          </button>
+        </form>
+        <div id="contactStatusBox" style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; font-weight: 600;"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p><strong>Excel Data Cleaner</strong> — เครื่องมือทำความสะอาดข้อมูลและตรวจสอบความถูกต้องสำหรับงานเอกสารและบัญชีไทย</p>
+      <p style="margin-top: 8px; opacity: 0.85;">ทำงานแบบออฟไลน์ 100% เพื่อความปลอดภัยสูงสุดของข้อมูลคุณ · <a href="#contact" style="color: #38bdf8;">ติดต่อแจ้งปัญหาคลิกที่นี่</a></p>
+    </div>
+  </footer>
+
+  <script>
+    // กู้คืนรหัสที่เคยออกไว้บนเบราว์เซอร์เครื่องนี้ (ป้องกันลูกค้าเผลอปิดหน้าเว็บ)
+    window.addEventListener("DOMContentLoaded", () => {
+      try {
+        const savedKey = localStorage.getItem("edc_saved_license_key");
+        if (savedKey) {
+          document.getElementById("generatedKeyText").textContent = savedKey;
+          document.getElementById("keyResultBox").style.display = "block";
+        }
+      } catch (_) {}
+    });
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("อ่านไฟล์รูปสลิปไม่สำเร็จ"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function showAndPersistKey(licenseKey) {
+      const keyBox = document.getElementById("keyResultBox");
+      const keyText = document.getElementById("generatedKeyText");
+      keyText.textContent = licenseKey;
+      keyBox.style.display = "block";
+      try {
+        localStorage.setItem("edc_saved_license_key", licenseKey);
+      } catch (_) {}
+    }
+
+    async function handleSlipSubmit(event) {
+      event.preventDefault();
+      const btn = document.getElementById("submitSlipBtn");
+      const errBox = document.getElementById("checkoutError");
+      const customer = document.getElementById("customerName").value.trim();
+      const email = document.getElementById("customerEmail").value.trim();
+      const fileInput = document.getElementById("slipFile");
+
+      errBox.style.display = "none";
+
+      if (!fileInput.files || !fileInput.files[0]) {
+        errBox.textContent = "กรุณาเลือกไฟล์รูปสลิปโอนเงินก่อนครับ";
+        errBox.style.display = "block";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "⏳ กำลังตรวจสอบสลิปธนาคาร...";
+
+      try {
+        const slipImage = await fileToDataUrl(fileInput.files[0]);
+
+        // หากเปิดไฟล์ดูบนเครื่องตัวเองโดยตรง (file://) จะแสดงตัวอย่างการทำงานให้ดูทันที
+        if (window.location.protocol === "file:") {
+          await new Promise((r) => setTimeout(r, 600));
+          const demoPayload = btoa(unescape(encodeURIComponent(JSON.stringify({
+            v: 1,
+            id: "EDC-DEMO01",
+            customer,
+            edition: "Personal",
+            issued: new Date().toISOString().slice(0, 10),
+            expires: ""
+          })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+          showAndPersistKey(`EDC1.${demoPayload}.DEMO_SIGNATURE_PREVIEW_ON_LOCAL_FILE`);
+          return;
+        }
+
+        const response = await fetch("/api/verify-slip", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customer, email, slipImage }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "ตรวจสอบสลิปไม่ผ่าน กรุณาตรวจสอบรูปสลิปอีกครั้ง");
+        }
+        showAndPersistKey(data.licenseKey);
+      } catch (err) {
+        errBox.textContent = err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อระบบตรวจสลิป";
+        errBox.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🔍 ตรวจสอบสลิปและรับ License Key ทันที";
+      }
+    }
+
+    function copyLicenseKey() {
+      const code = document.getElementById("generatedKeyText").textContent.trim();
+      const copyBtn = document.getElementById("copyKeyBtn");
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        copyBtn.textContent = "✓ คัดลอก License Key เรียบร้อยแล้ว!";
+        setTimeout(() => {
+          copyBtn.textContent = "📋 คัดลอก License Key";
+        }, 2500);
+      });
+    }
+
+    function downloadLicenseKeyFile() {
+      const code = document.getElementById("generatedKeyText").textContent.trim();
+      if (!code) return;
+      const content = `Excel Data Cleaner — License Key\r\n================================\r\n\r\nLicense Key ของคุณ:\r\n${code}\r\n\r\nวิธีปลดล็อกในโปรแกรม:\r\n1. เปิดโปรแกรม Excel Data Cleaner\r\n2. ไปที่แท็บ "เกี่ยวกับ / ตั้งค่า"\r\n3. กดปุ่ม "ใส่ License Key (ปลดล็อกโปรแกรม)" แล้ววางรหัสด้านบนลงไป\r\n`;
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ExcelDataCleaner-LicenseKey.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function handleContactSubmit(event) {
+      event.preventDefault();
+      const btn = document.getElementById("contactSubmitBtn");
+      const statusBox = document.getElementById("contactStatusBox");
+      const name = document.getElementById("contactName").value.trim();
+      const email = document.getElementById("contactEmail").value.trim();
+      const topic = document.getElementById("contactTopic").value;
+      const message = document.getElementById("contactMessage").value.trim();
+
+      statusBox.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "⏳ กำลังส่งข้อความ...";
+
+      try {
+        if (window.location.protocol === "file:") {
+          await new Promise((r) => setTimeout(r, 500));
+          statusBox.style.background = "#dcfce7";
+          statusBox.style.color = "#166534";
+          statusBox.textContent = "✅ ส่งข้อความสำเร็จ! ผู้พัฒนาจะติดต่อกลับทางอีเมลที่คุณระบุไว้โดยเร็วที่สุดครับ";
+          statusBox.style.display = "block";
+          document.getElementById("contactForm").reset();
+          return;
+        }
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, topic, message }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "ไม่สามารถส่งข้อความได้ในขณะนี้");
+        }
+        statusBox.style.background = "#dcfce7";
+        statusBox.style.color = "#166534";
+        statusBox.textContent = "✅ " + data.message;
+        statusBox.style.display = "block";
+        document.getElementById("contactForm").reset();
+      } catch (err) {
+        statusBox.style.background = "#fee2e2";
+        statusBox.style.color = "#dc2626";
+        statusBox.textContent = err.message || "เกิดข้อผิดพลาดในการส่งข้อความ";
+        statusBox.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "📩 ส่งข้อความถึงผู้พัฒนา";
+      }
+    }
+  </script>
+</body>
+</html>
