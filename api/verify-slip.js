@@ -1,6 +1,10 @@
 import crypto from "crypto";
 
-const VERIFICATION_CONTEXT = "ExcelDataCleaner-Offline-License-v1";
+// Must match _SIGNED_CONTEXT in app/licensing/policy.py. Keys are signed with the seller's Ed25519 private key;
+// the program only holds the public key, so it can check keys but nobody can make them from the program.
+const SIGNED_CONTEXT = "ExcelDataCleaner-Offline-License-v2:";
+// PKCS#8 header for a raw 32-byte Ed25519 private key.
+const ED25519_PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
 
 function base64UrlEncode(buffer) {
   return Buffer.from(buffer)
@@ -10,11 +14,19 @@ function base64UrlEncode(buffer) {
     .replace(/=+$/g, "");
 }
 
-function createLicenseToken({ customer, edition = "Personal", licenseId, issuedDate, expires = "", secret }) {
+function loadPrivateKey(text) {
+  const seed = Buffer.from(String(text).trim().replace(/-/g, "+").replace(/_/g, "/"), "base64");
+  if (seed.length !== 32) {
+    throw new Error("EDC_LICENSE_PRIVATE_KEY ไม่ถูกต้อง");
+  }
+  return crypto.createPrivateKey({ key: Buffer.concat([ED25519_PKCS8_PREFIX, seed]), format: "der", type: "pkcs8" });
+}
+
+function createLicenseToken({ customer, edition = "Personal", licenseId, issuedDate, expires = "", privateKey }) {
   // ใช้วันที่โอนเงินจากสลิป (issuedDate) เพื่อให้สลิปใบเดิมได้รหัส License Key เดิมเสมอ (Idempotent Recovery)
   const issued = (issuedDate || new Date().toISOString()).slice(0, 10);
   const payloadObj = {
-    v: 1,
+    v: 2,
     id: String(licenseId || "EDC-0001").trim(),
     customer: String(customer || "ผู้ใช้งานได้รับอนุญาต").trim(),
     edition: String(edition).trim(),
@@ -22,15 +34,12 @@ function createLicenseToken({ customer, edition = "Personal", licenseId, issuedD
     expires: String(expires).trim(),
   };
   const payloadBytes = Buffer.from(JSON.stringify(payloadObj), "utf-8");
-  const b64Payload = base64UrlEncode(payloadBytes);
-
-  const hmac = crypto.createHmac("sha256", Buffer.from(secret, "utf-8"));
-  hmac.update(Buffer.from(`${VERIFICATION_CONTEXT}:`, "utf-8"));
-  hmac.update(payloadBytes);
-  const sig = base64UrlEncode(hmac.digest());
-
-  return `EDC1.${b64Payload}.${sig}`;
+  // Ed25519 signatures are deterministic, so the same slip still yields the same key.
+  const signature = crypto.sign(null, Buffer.concat([Buffer.from(SIGNED_CONTEXT, "utf-8"), payloadBytes]), loadPrivateKey(privateKey));
+  return `EDC2.${base64UrlEncode(payloadBytes)}.${base64UrlEncode(signature)}`;
 }
+
+export { createLicenseToken };
 
 async function verifySlipWithProvider(slipBase64, expectedAmount) {
   const apiKey = process.env.SLIP_API_KEY;
@@ -110,8 +119,8 @@ async function sendLicenseEmail({ email, customer, licenseKey, licenseId }) {
       <p><strong>วิธีปลดล็อกในโปรแกรม:</strong></p>
       <ol>
         <li>เปิดโปรแกรม <strong>Excel Data Cleaner</strong> บนเครื่องของคุณ</li>
-        <li>ไปที่แท็บขวาสุด <strong>“เกี่ยวกับ / ตั้งค่า”</strong></li>
-        <li>กดปุ่ม <strong>“ใส่ License Key (ปลดล็อกโปรแกรม)”</strong> แล้ววางรหัสด้านบนลงไป</li>
+        <li>กดปุ่ม <strong>“🔑 ใส่ License Key”</strong> มุมขวาบนของโปรแกรม (หรือไปที่แท็บ <strong>“ตั้งค่า”</strong> ในเครื่องมือขั้นสูง)</li>
+        <li>วางรหัส License Key ด้านบนลงในช่องแล้วกด <strong>“ตรวจสอบและปลดล็อกโปรแกรม”</strong></li>
       </ol>
       <p style="color: #64748b; font-size: 13px; margin-top: 24px;">
         หมายเลขอ้างอิง: ${licenseId} (อีเมลที่แจ้งไว้: ${email})<br/>
@@ -177,8 +186,8 @@ export default async function handler(req, res) {
 
     const expectedAmount = Number(process.env.EXPECTED_AMOUNT || 790);
     const expectedReceiver = (process.env.EXPECTED_RECEIVER_NAME || "").trim();
-    const secret = process.env.EDC_LICENSE_SECRET;
-    if (!secret || secret.length < 16) {
+    const privateKey = process.env.EDC_LICENSE_PRIVATE_KEY;
+    if (!privateKey) {
       return res.status(500).json({ ok: false, error: "ระบบยังไม่พร้อมออก License Key กรุณาติดต่อผู้พัฒนาผ่านฟอร์มด้านล่าง" });
     }
 
@@ -208,7 +217,7 @@ export default async function handler(req, res) {
       edition: "Personal",
       licenseId,
       issuedDate: verified.transDate,
-      secret,
+      privateKey,
     });
 
     const [emailSent] = await Promise.all([
